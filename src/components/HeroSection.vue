@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Autoplay from 'embla-carousel-autoplay'
 
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  // Берем тип напрямую из компонента Shadcn, чтобы избежать конфликтов
   type CarouselApi,
 } from '@/components/ui/carousel'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,12 +13,11 @@ import Button from '@/components/ui/button/Button.vue'
 
 import { MapPin, GraduationCap, User, ArrowRight } from 'lucide-vue-next'
 
+// --- ЛОГИКА КАРУСЕЛИ ---
 const activeSlide = ref(0)
 const api = ref<CarouselApi>()
-
 const autoplayPlugin = Autoplay({ delay: 4000, stopOnInteraction: true })
 
-// Делаем параметр опциональным (| undefined), чтобы TypeScript не ругался
 const setApi = (val: CarouselApi | undefined) => {
   if (!val) return
   
@@ -34,6 +32,51 @@ const setApi = (val: CarouselApi | undefined) => {
 const scrollTo = (index: number) => {
   api.value?.scrollTo(index)
 }
+
+// --- ЛОГИКА ЭФФЕКТА ПЕЧАТИ ---
+const displayText = ref('')
+const fullText = 'Frontend разработчик'
+const isDeleting = ref(false)
+let typingTimeout: ReturnType<typeof setTimeout>
+
+const typeEffect = () => {
+  const currentLength = displayText.value.length
+
+  if (!isDeleting.value) {
+    // Фаза набора текста
+    displayText.value = fullText.substring(0, currentLength + 1)
+    
+    // Если полностью напечатали - запускаем паузу перед стиранием
+    if (displayText.value === fullText) {
+      isDeleting.value = true
+      typingTimeout = setTimeout(typeEffect, 2000) // Пауза 2 секунды
+      return
+    }
+    // Скорость печати (100мс на символ)
+    typingTimeout = setTimeout(typeEffect, 100) 
+    
+  } else {
+    // Фаза стирания текста
+    displayText.value = fullText.substring(0, currentLength - 1)
+    
+    // Если полностью стерли - запускаем паузу перед новым набором
+    if (displayText.value === '') {
+      isDeleting.value = false
+      typingTimeout = setTimeout(typeEffect, 500) // Пауза 0.5 сек
+      return
+    }
+    // Скорость стирания (в 2 раза быстрее печати)
+    typingTimeout = setTimeout(typeEffect, 50) 
+  }
+}
+
+onMounted(() => {
+  typeEffect()
+})
+
+onUnmounted(() => {
+  clearTimeout(typingTimeout)
+})
 </script>
 
 <template>
@@ -56,8 +99,11 @@ const scrollTo = (index: number) => {
             <h1 class="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
               Никита Когут
             </h1>
-            <p class="text-xl text-primary font-semibold">
-              Frontend разработчик
+            
+            <!-- Эффект печатающегося текста -->
+            <p class="text-xl text-primary font-semibold h-8 flex items-center">
+              <span>{{ displayText }}</span>
+              <span class="typewriter-cursor">|</span>
             </p>
           </div>
 
@@ -93,7 +139,7 @@ const scrollTo = (index: number) => {
                 </div>
                 <div>
                   <p class="text-xs text-muted-foreground">Образование</p>
-                  <p class="font-medium text-foreground">СПБУТУиЭ, Информ. системы и программирование</p>
+                  <p class="font-medium text-foreground">СПБУТУиЭ, Информ. системы и программирование (2022-2025)</p>
                 </div>
               </li>
             </ul>
@@ -112,71 +158,77 @@ const scrollTo = (index: number) => {
 
         <!-- ПРАВАЯ ЧАСТЬ: Карусель с фотографиями -->
         <div class="animate-fade-in-up" style="animation-delay: 200ms;">
-          <Carousel 
-            class="w-full max-w-sm mx-auto lg:mx-0 lg:ml-auto"
-            :plugins="[autoplayPlugin]"
-            @init-api="setApi"
-          >
-            <CarouselContent>
-              <!-- Слайд 1 -->
-              <CarouselItem>
-                <div class="p-1">
-                  <Card class="border-2 border-primary shadow-2xl shadow-primary/10 rounded-xl overflow-hidden">
-                    <CardContent class="p-0 flex aspect-square items-center justify-center">
-                      <img 
-                        src="https://ui-avatars.com/api/?name=Work+Photo&size=600&background=0d1117&color=58a6ff&bold=true&font-size=0.3" 
-                        alt="Фото 1" 
-                        class="w-full h-full object-cover"
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-              
-              <!-- Слайд 2 -->
-              <CarouselItem>
-                <div class="p-1">
-                  <Card class="border-2 border-primary shadow-2xl shadow-primary/10 rounded-xl overflow-hidden">
-                    <CardContent class="p-0 flex aspect-square items-center justify-center">
-                      <img 
-                        src="https://ui-avatars.com/api/?name=Travel+Photo&size=600&background=0d1117&color=58a6ff&bold=true&font-size=0.3" 
-                        alt="Фото 2" 
-                        class="w-full h-full object-cover"
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-
-              <!-- Слайд 3 -->
-              <CarouselItem>
-                <div class="p-1">
-                  <Card class="border-2 border-primary shadow-2xl shadow-primary/10 rounded-xl overflow-hidden">
-                    <CardContent class="p-0 flex aspect-square items-center justify-center">
-                      <img 
-                        src="https://ui-avatars.com/api/?name=Hobby+Photo&size=600&background=0d1117&color=58a6ff&bold=true&font-size=0.3" 
-                        alt="Фото 3" 
-                        class="w-full h-full object-cover"
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-            </CarouselContent>
-          </Carousel>
-          
-          <!-- Кастомные точки пагинации -->
-          <div class="flex items-center justify-center gap-2 mt-6">
-            <button
-              v-for="(_, index) in 3" 
-              :key="index"
-              @click="scrollTo(index)"
-              :class="[
-                'h-2 rounded-full transition-all duration-300',
-                activeSlide === index ? 'bg-primary w-6' : 'bg-muted-foreground/30 w-2 hover:bg-muted-foreground/50'
-              ]"
+          <!-- Обертка для правильного центрирования пагинации -->
+          <div class="w-full max-w-sm mx-auto lg:mx-0 lg:ml-auto">
+            
+            <Carousel 
+              class="w-full"
+              :plugins="[autoplayPlugin]"
+              @init-api="setApi"
             >
-            </button>
+              <CarouselContent>
+                <!-- Слайд 1 -->
+                <CarouselItem>
+                  <div class="p-1">
+                    <Card class="border-2 border-primary shadow-2xl shadow-primary/10 rounded-xl overflow-hidden">
+                      <CardContent class="p-0 flex aspect-square items-center justify-center">
+                        <img 
+                          src="https://ui-avatars.com/api/?name=Work+Photo&size=600&background=0d1117&color=58a6ff&bold=true&font-size=0.3" 
+                          alt="Фото 1" 
+                          class="w-full h-full object-cover"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+                
+                <!-- Слайд 2 -->
+                <CarouselItem>
+                  <div class="p-1">
+                    <Card class="border-2 border-primary shadow-2xl shadow-primary/10 rounded-xl overflow-hidden">
+                      <CardContent class="p-0 flex aspect-square items-center justify-center">
+                        <img 
+                          src="https://ui-avatars.com/api/?name=Travel+Photo&size=600&background=0d1117&color=58a6ff&bold=true&font-size=0.3" 
+                          alt="Фото 2" 
+                          class="w-full h-full object-cover"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+
+                <!-- Слайд 3 -->
+                <CarouselItem>
+                  <div class="p-1">
+                    <Card class="border-2 border-primary shadow-2xl shadow-primary/10 rounded-xl overflow-hidden">
+                      <CardContent class="p-0 flex aspect-square items-center justify-center">
+                        <img 
+                          src="https://ui-avatars.com/api/?name=Hobby+Photo&size=600&background=0d1117&color=58a6ff&bold=true&font-size=0.3" 
+                          alt="Фото 3" 
+                          class="w-full h-full object-cover"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
+            
+            <!-- Кастомные точки пагинации -->
+            <div class="flex items-center justify-center gap-2 mt-6">
+              <button
+                v-for="(_, index) in 3" 
+                :key="index"
+                type="button"
+                @click="scrollTo(index)"
+                :class="[
+                  'h-2 rounded-full transition-all duration-300',
+                  activeSlide === index ? 'bg-primary w-6' : 'bg-muted-foreground/30 w-2 hover:bg-muted-foreground/50'
+                ]"
+              >
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -186,6 +238,7 @@ const scrollTo = (index: number) => {
 </template>
 
 <style scoped>
+/* Анимация появления блоков */
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -199,5 +252,18 @@ const scrollTo = (index: number) => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fade-in-up 0.8s ease-out forwards;
+}
+
+/* Анимация мерцающего курсора */
+.typewriter-cursor {
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+  font-weight: 100; /* Делаем палочку тоньше */
+  color: hsl(var(--primary));
+}
+
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
 }
 </style>
