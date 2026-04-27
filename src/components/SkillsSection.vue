@@ -41,7 +41,7 @@ import { skillsData } from '@/data/skills'
               value="frameworks" 
               class="text-sm font-medium py-2.5 px-5 transition-colors data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-sm"
             >
-              Фреймворки
+              Фреймворки и библиотеки
             </TabsTrigger>
             <TabsTrigger 
               value="tools" 
