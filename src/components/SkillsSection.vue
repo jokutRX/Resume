@@ -7,8 +7,6 @@ import {
 } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 
-import { FileCode2, Layers, Wrench } from 'lucide-vue-next'
-
 // Импортируем данные
 import { skillsData } from '@/data/skills'
 </script>
@@ -31,34 +29,41 @@ import { skillsData } from '@/data/skills'
       <div class="animate-fade-in-up" style="animation-delay: 200ms;">
         <Tabs default-value="languages" class="w-full">
           
-          <!-- Кнопки переключения -->
-          <TabsList class="mx-auto grid w-fit grid-cols-3 bg-muted/50 p-1 rounded-lg mb-10">
-            <TabsTrigger value="languages" class="gap-1.5 text-sm">
-              <FileCode2 class="h-4 w-4 hidden sm:block" />
+          <!-- Панель переключения (Без иконок, с цветом активного таба) -->
+          <TabsList class="mx-auto grid w-fit grid-cols-3 bg-muted/60 p-1.5 rounded-xl mb-12 border shadow-sm">
+            <TabsTrigger 
+              value="languages" 
+              class="text-sm font-medium py-2.5 px-5 transition-colors data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-sm"
+            >
               Языки
             </TabsTrigger>
-            <TabsTrigger value="frameworks" class="gap-1.5 text-sm">
-              <Layers class="h-4 w-4 hidden sm:block" />
+            <TabsTrigger 
+              value="frameworks" 
+              class="text-sm font-medium py-2.5 px-5 transition-colors data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-sm"
+            >
               Фреймворки
             </TabsTrigger>
-            <TabsTrigger value="tools" class="gap-1.5 text-sm">
-              <Wrench class="h-4 w-4 hidden sm:block" />
+            <TabsTrigger 
+              value="tools" 
+              class="text-sm font-medium py-2.5 px-5 transition-colors data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-sm"
+            >
               Инструменты
             </TabsTrigger>
           </TabsList>
 
           <!-- Динамический рендер контента табов -->
           <TabsContent v-for="(skills, category) in skillsData" :key="category" :value="category">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="flex flex-wrap justify-center gap-6">
               
               <Card 
                 v-for="tech in skills" 
                 :key="tech.name" 
-                class="group bg-background/50 border hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                class="group bg-background/50 border hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
+                       w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]" 
               >
                 <CardContent class="p-6 flex flex-col items-center text-center gap-4 h-full">
                   
-                  <!-- Блок с иконкой (Фиксированный размер для идеального выравнивания) -->
+                  <!-- Блок с иконкой -->
                   <div class="bg-muted/50 rounded-2xl p-3 w-24 h-24 flex items-center justify-center border transition-colors group-hover:border-primary/20">
                     <img 
                       :src="tech.icon" 
@@ -111,7 +116,7 @@ import { skillsData } from '@/data/skills'
 @keyframes fade-in {
   from { 
     opacity: 0; 
-    transform: translateY(5px); 
+    transform: translateY(1px); 
   }
   to { 
     opacity: 1; 

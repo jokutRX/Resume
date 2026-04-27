@@ -6,20 +6,20 @@ export interface Skill {
   desc: string
 }
 
-// Импортируем локальные PNG картинки из папки assets
-import tsImg from '@/assets/ts.png'
-import jsImg from '@/assets/js.png'
-import goImg from '@/assets/go.png'
-import pythonImg from '@/assets/python.png'
+// Чистые импорты без пробелов и мусора в названиях
+import tsImg from '@/assets/ts.svg'
+import jsImg from '@/assets/js.svg'
+import goImg from '@/assets/go.svg'
+import pythonImg from '@/assets/python.svg'
 
-import vueImg from '@/assets/vue.png'
-import nuxtImg from '@/assets/nuxt.png'
-import tailwindImg from '@/assets/tailwind.png'
+import vueImg from '@/assets/vue.svg'
+import nuxtImg from '@/assets/nuxt.svg'
+import tailwindImg from '@/assets/tailwind.svg'
 
-import gitImg from '@/assets/git.png'
-import viteImg from '@/assets/vite.png'
-import figmaImg from '@/assets/figma.png'
-import dockerImg from '@/assets/docker.png'
+import gitImg from '@/assets/git.svg'
+import viteImg from '@/assets/vite.svg'
+import figmaImg from '@/assets/figma.svg'
+import dockerImg from '@/assets/docker.svg'
 
 export const skillsData: Record<string, Skill[]> = {
   languages: [
