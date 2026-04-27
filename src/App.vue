@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TheHeader from '@/components/TheHeader.vue'
 import HeroSection from '@/components/HeroSection.vue'
+import SkillsSection from '@/components/SkillsSection.vue'
 </script>
 
 <template>
@@ -9,6 +10,7 @@ import HeroSection from '@/components/HeroSection.vue'
     
     <main>
       <HeroSection />
+      <SkillsSection />
     </main>
   </div>
 </template>
