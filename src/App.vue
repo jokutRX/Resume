@@ -17,84 +17,20 @@ const updateScrollProgress = () => {
   }
 }
 
-// --- Логика соединительных стрелок ---
-const svgLayer = ref<HTMLElement | null>(null)
-
-const drawConnectors = () => {
-  if (!svgLayer.value) return
-  
-  const ec1 = document.getElementById('exp-card-1')
-  const pc1 = document.getElementById('proj-card-1')
-  const ec2 = document.getElementById('exp-card-2')
-  const pc2 = document.getElementById('proj-card-2')
-
-  if (!ec1 || !pc1 || !ec2 || !pc2) return
-
-  const containerRect = svgLayer.value.getBoundingClientRect()
-  svgLayer.value.style.height = `${containerRect.height}px`
-
-  const drawPath = (id: string, startEl: HTMLElement, endEl: HTMLElement, side: 'left' | 'right') => {
-    const path = document.getElementById(id)
-    if (!path) return
-
-    const r1 = startEl.getBoundingClientRect()
-    const r2 = endEl.getBoundingClientRect()
-    
-    const loopSize = 100 
-
-    // Точка старта: ровно СБОКУ ПОСЕРЕДИНЕ верхней карточки
-    const x1 = side === 'left' 
-      ? r1.left - containerRect.left 
-      : r1.right - containerRect.left
-    const y1 = r1.top - containerRect.top + (r1.height / 2)
-      
-    // Точка конца: ровно СБОКУ ПОСЕРЕДИНЕ нижней карточки
-    const x2 = side === 'left' 
-      ? r2.left - containerRect.left 
-      : r2.right - containerRect.left
-    const y2 = r2.top - containerRect.top + (r2.height / 2)
-
-    const dy = y2 - y1 
-    const loopDir = side === 'left' ? -1 : 1 
-
-    // Построение пути с S-завитками
-    // ВАЖНО: Последняя точка контрольной кривой ${x2 + (loopDir * -40)} ${y2}
-    // заставляет линию подходить к карточке СТРОГО ГОРИЗОНТАЛЬНО сбоку
-    const d = `
-      M ${x1} ${y1} 
-      C ${x1 + (loopDir * loopSize)} ${y1}, ${x1 + (loopDir * loopSize)} ${y1 + dy * 0.3}, ${x1} ${y1 + dy * 0.3} 
-      C ${x1 + (loopDir * -loopSize)} ${y1 + dy * 0.3}, ${x1 + (loopDir * -loopSize)} ${y1 + dy * 0.6}, ${x1} ${y1 + dy * 0.6} 
-      C ${x1 + (loopDir * loopSize * 1.2)} ${y1 + dy * 0.8}, ${x2 + (loopDir * -40)} ${y2}, ${x2} ${y2}
-    `
-
-    path.setAttribute('d', d)
-  }
-
-  drawPath('line-1', ec1, pc1, 'left')
-  drawPath('line-2', ec2, pc2, 'right')
-}
-
-const handleUpdate = () => {
-  updateScrollProgress()
-  drawConnectors()
-}
-
 onMounted(() => {
-  window.addEventListener('scroll', handleUpdate, { passive: true })
-  window.addEventListener('resize', drawConnectors)
-  setTimeout(drawConnectors, 100)
-  handleUpdate()
+  window.addEventListener('scroll', updateScrollProgress, { passive: true })
+  updateScrollProgress()
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleUpdate)
-  window.removeEventListener('resize', drawConnectors)
+  window.removeEventListener('scroll', updateScrollProgress)
 })
 </script>
 
 <template>
   <div class="relative min-h-screen bg-background text-foreground overflow-x-hidden">
     
+    <!-- Полоска прогресса -->
     <div class="fixed top-0 left-0 w-full h-1 z-[9999]">
       <div class="h-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" :style="{ width: scrollProgress + '%' }"></div>
     </div>
@@ -105,42 +41,16 @@ onUnmounted(() => {
       <HeroSection />
       <SkillsSection />
       
-      <div ref="svgLayer" class="relative">
+      <!-- overflow-hidden убирает второй скролл от цветных пятен -->
+      <div class="relative overflow-hidden">
         <ExperienceSection />
         
-        <svg class="absolute top-0 left-0 w-full pointer-events-none z-20" style="overflow: visible;">
-          <defs>
-            <!-- 
-              МАРКЕР: Стрелка, смотрящая ВБЛИК (по горизонтали)
-              d="M 0 0 L 14 7 L 0 14 Z" рисует треугольник, указывающий вправо.
-              refX="14" refY="7" означает, что "острие" (14,7) будет привязано к концу линии.
-              orient="auto" автоматически перевернет её для левой стороны.
-            -->
-            <marker id="arrowhead" markerWidth="14" markerHeight="14" refX="14" refY="7" orient="auto" markerUnits="userSpaceOnUse">
-              <path d="M 0 0 L 14 7 L 0 14 Z" fill="hsl(var(--primary))" />
-            </marker>
-          </defs>
-          
-          <path 
-            id="line-1" 
-            fill="none" 
-            stroke="hsl(var(--primary))" 
-            stroke-width="2.5" 
-            stroke-dasharray="12 14" 
-            stroke-linecap="round"
-            marker-end="url(#arrowhead)" 
-          />
-          
-          <path 
-            id="line-2" 
-            fill="none" 
-            stroke="hsl(var(--primary))" 
-            stroke-width="2.5" 
-            stroke-dasharray="12 14" 
-            stroke-linecap="round"
-            marker-end="url(#arrowhead)" 
-          />
-        </svg>
+        <!-- АНИМИРОВАННЫЙ ЦВЕТНОЙ МОСТ -->
+        <div class="aurora-bridge">
+          <div class="aurora-blob blob-1"></div>
+          <div class="aurora-blob blob-2"></div>
+          <div class="aurora-blob blob-3"></div>
+        </div>
 
         <ProjectsSection />
       </div>
@@ -150,4 +60,73 @@ onUnmounted(() => {
 </template>
 
 <style>
+/* ==========================================
+   МАГИЯ AURORA (Адаптивная под обе темы)
+   ========================================== */
+
+.aurora-bridge {
+  position: absolute;
+  top: 30%;
+  left: -10%;
+  width: 120%;
+  height: 80%;
+  z-index: 0; 
+  filter: blur(100px); 
+  pointer-events: none; 
+  overflow: hidden;
+  
+  /* СВЕТЛАЯ ТЕМА: Режим умножения дает красивый акварельный эффект */
+  mix-blend-mode: multiply; 
+  opacity: 0.6;
+}
+
+/* ТЕМНАЯ ТЕМА: Класс .dark добавляется Shadcn на тег html */
+.dark .aurora-bridge {
+  /* Режим осветления дает неоновое свечение */
+  mix-blend-mode: screen; 
+  opacity: 0.5;
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  width: 50%;
+  height: 60%;
+}
+
+.blob-1 {
+  background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+  top: 10%;
+  left: 10%;
+  animation: float-1 12s ease-in-out infinite alternate;
+}
+
+.blob-2 {
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+  top: 40%;
+  right: 10%;
+  animation: float-2 15s ease-in-out infinite alternate;
+}
+
+.blob-3 {
+  background: radial-gradient(circle, #ec4899 0%, transparent 70%);
+  bottom: 10%;
+  left: 40%;
+  animation: float-3 10s ease-in-out infinite alternate;
+}
+
+@keyframes float-1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(100px, 50px) scale(1.2); }
+}
+
+@keyframes float-2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-80px, -60px) scale(0.9); }
+}
+
+@keyframes float-3 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, -80px) scale(1.1); }
+}
 </style>

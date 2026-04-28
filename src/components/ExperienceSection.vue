@@ -2,7 +2,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Briefcase } from 'lucide-vue-next'
+import { Separator } from '@/components/ui/separator'
+import { Progress } from '@/components/ui/progress'
+import { Briefcase, Rocket, Code2, Server } from 'lucide-vue-next'
 
 const sectionRef = ref<HTMLElement | null>(null)
 const displayedYears = ref(0)
@@ -53,7 +55,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section ref="sectionRef" id="experience" class="py-12 md:py-20 overflow-hidden">
+  <section ref="sectionRef" id="experience" class="py-12 md:py-20 overflow-hidden relative z-10">
     <div class="container mx-auto max-w-screen-xl px-4">
       
       <div class="text-center mb-8 animate-fade-in-up" style="animation-delay: 0ms;">
@@ -82,39 +84,106 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <div class="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 md:mt-16 animate-fade-in-up" style="animation-delay: 200ms;">
+      <!-- Обертка для всех карточек -->
+      <div class="max-w-3xl mx-auto space-y-6 mt-12 md:mt-16 animate-fade-in-up" style="animation-delay: 200ms;">
         
-        <!-- ДОБАВЛЕН ID ДЛЯ СТРЕЛКИ -->
-        <Card id="exp-card-1" class="bg-muted/40 border hover:border-primary/30 transition-colors">
-          <CardContent class="p-6 space-y-4">
-            <div class="flex items-center justify-between">
-              <Badge variant="secondary" class="font-normal">6 месяцев</Badge>
-              <Briefcase class="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-foreground">Стадион «Кировец»</h3>
-              <p class="text-sm text-muted-foreground mt-1">Frontend разработчик</p>
-            </div>
-            <p class="text-sm text-muted-foreground leading-relaxed">
-              Разработка интерфейсов для цифровых сервисов стадиона. Работа с адаптивной версткой, интеграция API и оптимизация пользовательского пути.
-            </p>
-          </CardContent>
-        </Card>
+        <!-- Сетка рабочих карточек -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- 1. Локатор -->
+          <Card class="bg-background/60 backdrop-blur-xl border border-white/10 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+            <CardContent class="p-6 space-y-4">
+              <div class="flex items-center justify-between">
+                <Badge variant="secondary" class="font-normal">июль 2025 - июль 2026</Badge>
+                <Briefcase class="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Локатор</h3>
+                <p class="text-sm text-muted-foreground mt-1">Frontend разработчик</p>
+              </div>
+              <p class="text-sm text-muted-foreground leading-relaxed">
+                Поддержка и развитие масштабного веб-приложения. Рефакторинг legacy-кода, внедрение новых фич и работа со сложной стейт-менеджмент логикой.
+              </p>
+            </CardContent>
+          </Card>
 
-        <!-- ДОБАВЛЕН ID ДЛЯ СТРЕЛКИ -->
-        <Card id="exp-card-2" class="bg-muted/40 border hover:border-primary/30 transition-colors">
-          <CardContent class="p-6 space-y-4">
-            <div class="flex items-center justify-between">
-              <Badge variant="secondary" class="font-normal">1 год</Badge>
-              <Briefcase class="h-5 w-5 text-muted-foreground" />
+          <!-- 2. Стадион «Кировец» -->
+          <Card class="bg-background/60 backdrop-blur-xl border border-white/10 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+            <CardContent class="p-6 space-y-4">
+              <div class="flex items-center justify-between">
+                <Badge variant="secondary" class="font-normal">Январь 2025 - Июнь 2025</Badge>
+                <Briefcase class="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Стадион «Кировец»</h3>
+                <p class="text-sm text-muted-foreground mt-1">Frontend разработчик</p>
+              </div>
+              <p class="text-sm text-muted-foreground leading-relaxed">
+                Разработка интерфейсов для цифровых сервисов стадиона. Работа с адаптивной версткой, интеграция API и оптимизация пользовательского пути.
+              </p>
+            </CardContent>
+          </Card>
+
+        </div>
+
+        <!-- ==========================================
+             КАРТОЧКА: АКТИВНО ИЗУЧАЮ (Динамичная)
+             ========================================== -->
+        <Card class="bg-background/60 backdrop-blur-xl border border-white/10 transition-all duration-300 hover:shadow-[0_0_40px_rgba(6,182,212,0.15)]">
+          <CardContent class="p-6 space-y-5">
+            
+            <!-- Заголовок с пульсирующим индикатором "Live" -->
+            <div class="flex items-center gap-3">
+              <div class="relative flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 border border-primary/20">
+                <Rocket class="h-5 w-5 text-primary" />
+                <!-- Зеленая пульсирующая точка -->
+                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Активно изучаю</h3>
+                <p class="text-xs text-muted-foreground">Расширение экспертизы и инфраструктурные навыки</p>
+              </div>
             </div>
-            <div>
-              <h3 class="text-lg font-semibold text-foreground">Локатор</h3>
-              <p class="text-sm text-muted-foreground mt-1">Frontend разработчик</p>
+
+            <Separator class="bg-white/10" />
+
+            <!-- Блок 1: Backend для Frontend (Обновлено) -->
+            <div class="space-y-3 p-3 -mx-3 rounded-xl border border-transparent hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <Code2 class="h-4 w-4 text-muted-foreground" />
+                  <p class="text-sm font-medium text-foreground">Backend разработка</p>
+                </div>
+                <Badge variant="outline" class="text-xs font-normal">В процессе</Badge>
+              </div>
+              <p class="text-xs text-muted-foreground leading-relaxed pl-6">
+                Активное изучение Backend для правильного и эффективного взаимодействия с серверной частью, написания оптимизированных запросов и понимания архитектуры данных.
+              </p>
+              <!-- Шкала прогресса -->
+              <Progress :model-value="70" class="h-2 bg-white/10 pl-6" />
             </div>
-            <p class="text-sm text-muted-foreground leading-relaxed">
-              Поддержка и развитие масштабного веб-приложения. Рефакторинг legacy-кода, внедрение новых фич и работа со сложной стейт-менеджмент логикой.
-            </p>
+
+            <Separator class="bg-white/10" />
+
+            <!-- Блок 2: DevOps (Динамичный) -->
+            <div class="space-y-3 p-3 -mx-3 rounded-xl border border-transparent hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <Server class="h-4 w-4 text-muted-foreground" />
+                  <p class="text-sm font-medium text-foreground">DevOps и Инфраструктура</p>
+                </div>
+                <Badge variant="outline" class="text-xs font-normal">Активно</Badge>
+              </div>
+              <p class="text-xs text-muted-foreground leading-relaxed pl-6">
+                Глубокое изучение Docker (написание сложных compose-сценариев для микросервисов), настройка CI/CD пайплайнов для полной автоматизации сборки и деплоя.
+              </p>
+              <!-- Шкала прогресса -->
+              <Progress :model-value="55" class="h-2 bg-white/10 pl-6" />
+            </div>
+
           </CardContent>
         </Card>
 
