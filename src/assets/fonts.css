@@ -1,0 +1,10 @@
+/* src/assets/fonts.css */
+
+@font-face {
+  font-family: 'Locator';
+  /* Используем относительный путь ./ так как файл лежит в той же папке */
+  src: url('./locator_font.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

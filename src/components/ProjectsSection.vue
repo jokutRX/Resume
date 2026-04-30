@@ -1,51 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter
-} from '@/components/ui/dialog'
-import { 
-  ExternalLink, 
-  CheckCircle2, 
-  AlertTriangle,
-  Code2
-} from 'lucide-vue-next'
+import { ExternalLink } from 'lucide-vue-next'
 
-// Импортируем данные и типы
 import { PROJECTS, type Project } from '@/data/projects'
 
-// Импортируем изображения
+// Импортируем изображения для карточки Локатор
 import skrfPng from '@/assets/skrf.png'
 import locatorSvg from '@/assets/locator.svg'
-
-// --- Логика ---
-const isModalOpen = ref(false)
-const selectedProject = ref<Project | null>(null)
-
-const openProjectDetails = (project: Project) => {
-  selectedProject.value = project
-  isModalOpen.value = true
-}
-
-const parseChallenge = (text: string) => {
-  if (!text) return { problem: '', solution: '' }
-  
-  const parts = text.split('Решение:')
-  
-  return {
-    problem: (parts[0] || '').replace('Проблема: ', ''),
-    solution: parts[1] || ''
-  }
-}
 </script>
 
 <template>
@@ -82,7 +46,6 @@ const parseChallenge = (text: string) => {
                   </Badge>
                 </div>
               </div>
-              <!-- Иконка скрыта для Локатора -->
               <component v-if="project.id !== 'locator'" :is="project.icon" class="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </CardHeader>
@@ -127,114 +90,37 @@ const parseChallenge = (text: string) => {
           </CardContent>
 
           <CardFooter class="pt-4 border-t border-white/5 bg-white/[0.02]">
-            <!-- КРАСИВАЯ КНОПКА -->
+            <!-- Кнопка Локатора (Яркая) -->
             <Button 
               v-if="project.id === 'locator'"
+              as-child
               variant="default" 
               size="lg" 
-              class="w-full group/btn shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:shadow-[0_0_25px_rgba(var(--primary),0.6)] transition-all duration-300"
-              @click="openProjectDetails(project)"
+              class="w-full shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:shadow-[0_0_25px_rgba(var(--primary),0.6)] transition-all duration-300"
             >
-              <span class="flex items-center gap-2 font-semibold">
-                Подробнее о кейсе <ExternalLink class="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </span>
+              <RouterLink :to="`/projects/${project.id}`" class="w-full flex items-center justify-center gap-2 font-semibold">
+                Подробнее о кейсе <ExternalLink class="w-4 h-4" />
+              </RouterLink>
             </Button>
 
-            <!-- Обычная кнопка для остальных -->
+            <!-- Кнопка остальных (Ghost) -->
             <Button 
               v-else
+              as-child
               variant="ghost" 
               size="sm" 
-              class="w-full group/btn justify-between px-4"
-              @click="openProjectDetails(project)"
+              class="w-full justify-between px-4"
             >
-              <span class="group-hover/btn:translate-x-1 transition-transform flex items-center gap-2">
-                Подробнее о кейсе <ExternalLink class="w-4 h-4" />
-              </span>
+              <RouterLink :to="`/projects/${project.id}`" class="w-full flex items-center justify-between gap-2">
+                <span>Подробнее о кейсе</span>
+                <ExternalLink class="w-4 h-4" />
+              </RouterLink>
             </Button>
           </CardFooter>
         </Card>
 
       </div>
     </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО -->
-    <Dialog v-model:open="isModalOpen">
-      <DialogContent class="sm:max-w-[600px] bg-background/95 backdrop-blur-xl border-white/10 text-foreground p-0 overflow-hidden">
-        <DialogHeader class="px-6 pt-6 pb-2 border-b border-white/5">
-          <div class="flex justify-between items-start">
-            <div>
-              <DialogTitle class="text-2xl font-bold tracking-tight">
-                {{ selectedProject?.title }}
-              </DialogTitle>
-              <DialogDescription class="text-base mt-1 text-muted-foreground">
-                {{ selectedProject?.description }}
-              </DialogDescription>
-            </div>
-            <component :is="selectedProject?.icon" class="w-8 h-8 text-primary/50" />
-          </div>
-        </DialogHeader>
-
-        <ScrollArea class="max-h-[60vh] px-6 py-4">
-          
-          <!-- 1. Стек технологий -->
-          <div class="space-y-3 mb-6">
-            <h4 class="text-sm font-semibold text-primary flex items-center gap-2">
-              <Code2 class="w-4 h-4" /> Стек технологий
-            </h4>
-            <div class="flex flex-wrap gap-2">
-              <Badge v-for="tech in selectedProject?.techStack" :key="tech" variant="secondary" class="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors px-3 py-1">
-                {{ tech }}
-              </Badge>
-            </div>
-          </div>
-
-          <Separator class="bg-white/10" />
-
-          <!-- 2. Выполненные задачи -->
-          <div class="space-y-4 mt-6 mb-6">
-            <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <CheckCircle2 class="w-4 h-4 text-green-500" /> Выполненные задачи
-            </h4>
-            <ul class="space-y-3">
-              <li v-for="(task, idx) in selectedProject?.tasks" :key="idx" class="text-sm text-muted-foreground flex gap-3 leading-relaxed">
-                <span class="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-green-500/50 shrink-0"></span>
-                <span>{{ task }}</span>
-              </li>
-            </ul>
-          </div>
-
-          <Separator class="bg-white/10" />
-
-          <!-- 3. Сложности и решения -->
-          <div class="space-y-4 mt-6 mb-2">
-            <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <AlertTriangle class="w-4 h-4 text-amber-500" /> Сложности и решения
-            </h4>
-            <div class="space-y-4">
-              <div v-for="(challenge, idx) in selectedProject?.challenges" :key="idx" class="text-sm border border-white/5 bg-white/[0.02] rounded-lg p-3">
-                <!-- Используем вспомогательную функцию парсинга -->
-                <div class="flex items-start gap-2 text-red-400/90 font-medium mb-1">
-                  <AlertTriangle class="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <span>{{ parseChallenge(challenge).problem }}</span>
-                </div>
-                <div class="flex items-start gap-2 text-green-400/90 pl-5.5">
-                  <CheckCircle2 class="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <span class="text-muted-foreground">{{ parseChallenge(challenge).solution }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollArea>
-
-        <DialogFooter class="px-6 py-4 border-t border-white/5 bg-white/[0.02]">
-          <Button variant="outline" class="w-full sm:w-auto" @click="isModalOpen = false">
-            Закрыть
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
   </section>
 </template>
 
