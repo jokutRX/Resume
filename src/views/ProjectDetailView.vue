@@ -1,188 +1,320 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { PROJECTS, type Project } from '@/data/projects'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger 
+} from '@/components/ui/accordion'
+
+import { 
   ArrowLeft, 
   Github, 
-  Code2, 
   CheckCircle2, 
-  AlertTriangle 
+  FileText,
+  Route,
+  Code2,
+  ShieldCheck,
+  Zap,
+  Layers,
+  BarChart3,
+  Database
 } from 'lucide-vue-next'
 
-// Импортируем только логотипы
 import skrfPng from '@/assets/skrf.png'
 import locatorSvg from '@/assets/locator.svg'
-
-// ScrollArea импорт удален, так как на странице он не нужен
 
 const route = useRoute()
 const router = useRouter()
 
-// Получаем проект по ID из URL
 const project = computed(() => {
-  const id = route.params.id
-  
-  if (!id || Array.isArray(id)) return null
-
+  const id = route.params.id as string
+  if (!id) return null
   return PROJECTS.find(p => p.id === id) || null
 })
 
-// Функция для возврата назад
-const goBack = () => {
-  router.push('/')
-}
+const goBack = () => router.push('/')
 
-// Функция парсинга текста
-const parseChallenge = (text: string) => {
-  if (!text) return { problem: '', solution: '' }
-  
-  const parts = text.split('Решение:')
-  
-  return {
-    problem: (parts[0] || '').replace('Проблема: ', ''),
-    solution: parts[1] || ''
+// ✅ Реактивные переменные для обоих блоков
+const hoveredTaskIndex = ref<number | null>(null)
+const hoveredSolutionIndex = ref<number | null>(null)
+
+const keyTasks = [
+  { 
+    icon: FileText, 
+    title: 'Автоматизация документооборота', 
+    category: 'Процессы',
+    description: 'Разработка системы генерации, маршрутизации и хранения процессуальных документов с минимизацией ручного ввода и валидацией на лету.' 
+  },
+  { 
+    icon: Route,
+    title: 'Визуализация этапов УД', 
+    category: 'UX/UI',
+    description: 'Интерактивные схемы ведения уголовных дел с наглядным отображением статусов, процессуальных сроков и ответственных лиц.' 
+  },
+  { 
+    icon: Code2, 
+    title: 'Разработка модулей', 
+    category: 'Разработка',
+    description: 'Создание независимых функциональных блоков: аналитика, отчетность, интеграции с внешними реестрами и API.' 
+  },
+  { 
+    icon: ShieldCheck, 
+    title: 'Всесторонняя поддержка', 
+    category: 'DevOps/Support',
+    description: 'Настройка мониторинга, логирования, CI/CD пайплайнов, оперативное устранение инцидентов и сопровождение релизов.' 
   }
-}
+]
+
+const keySolutions = [
+  { 
+    icon: Zap, 
+    title: 'Оптимизация бизнес-процессов', 
+    type: 'Архитектура',
+    description: 'Внедрение ролевой модели доступа и автоматических валидаций для снижения ошибок ввода на 85%.' 
+  },
+  { 
+    icon: Layers, 
+    title: 'Модульная структура', 
+    type: 'Backend',
+    description: 'Переход к компонентной архитектуре для независимого масштабирования, тестирования и переиспользования логики.' 
+  },
+  { 
+    icon: BarChart3, 
+    title: 'Единая точка входа', 
+    type: 'Интеграция',
+    description: 'Консолидация разрозненных инструментов в единый дашборд с кастомными виджетами и экспортом данных.' 
+  },
+  { 
+    icon: Database, 
+    title: 'Централизованное хранение данных', 
+    type: 'Data',
+    description: 'Проектирование реляционной базы данных с нормализацией, индексами и репликацией для обеспечения целостности и производительности.' 
+  }
+]
 </script>
 
 <template>
-  <div class="min-h-screen pb-20 pt-24 bg-background text-foreground animate-fade-in-up overflow-x-hidden">
-    <div class="container mx-auto max-w-5xl px-4">
+  <div class="min-h-screen pb-24 pt-24 bg-background text-foreground overflow-x-hidden">
+    <div class="container mx-auto max-w-4xl px-4">
       
-      <!-- Кнопка Назад -->
-      <Button variant="ghost" size="sm" class="mb-6 group" @click="goBack">
+      <!-- Кнопка назад -->
+      <Button variant="ghost" size="sm" class="mb-10 group" @click="goBack">
         <ArrowLeft class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
         Назад к проектам
       </Button>
 
-      <!-- Если проект не найден -->
       <div v-if="!project" class="text-center py-20">
-        <h1 class="text-2xl font-bold text-muted-foreground">Проект не найден</h1>
+        <h1 class="text-3xl font-bold text-muted-foreground">Проект не найден</h1>
       </div>
 
-      <!-- Основной контент -->
-      <div v-else class="space-y-10">
+      <div v-else class="space-y-16">
         
-        <!-- ИНТЕРАКТИВНАЯ КАРТОЧКА -->
-        <div class="relative group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-2xl min-h-[400px] flex items-center justify-center cursor-pointer transition-colors duration-500 hover:border-white/20">
-          
-          <!-- СЛОЙ 1: ЛОГОТИПЫ -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center gap-6 z-10 transition-all duration-700 ease-in-out opacity-100 scale-100 blur-none group-hover:opacity-30 group-hover:scale-110 group-hover:blur-[1px]">
-            <!-- SKRF -->
-            <img :src="skrfPng" alt="SKRF Logo" class="h-24 md:h-32 w-auto object-contain transition-transform duration-500" />
-            
-            <!-- Вертикальный разделитель -->
-            <Separator orientation="horizontal" class="w-16 md:w-24 bg-white/20" />
-            
-            <!-- Locator -->
-            <img :src="locatorSvg" alt="Locator Logo" class="h-24 md:h-32 w-auto object-contain transition-transform duration-500 delay-100" />
+        <!-- Hero Section -->
+        <div class="relative group overflow-hidden rounded-3xl border border-border bg-card shadow-2xl min-h-[460px] flex items-center justify-center cursor-pointer">
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-8 z-10 transition-all duration-700 
+                      group-hover:opacity-30 group-hover:scale-110 group-hover:blur-[2px]">
+            <img :src="skrfPng" alt="SKRF" class="h-36 w-auto drop-shadow-xl" />
+            <Separator orientation="horizontal" class="w-28 bg-border" />
+            <img :src="locatorSvg" alt="Locator" class="h-36 w-auto drop-shadow-xl" />
           </div>
 
-          <!-- СЛОЙ 2: ТЕКСТ -->
-          <div class="relative z-20 w-full max-w-3xl mx-auto transition-all duration-700 ease-out transform translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 text-center">
-            
-            <div class="space-y-6">
-              <!-- Заголовок -->
-              <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground drop-shadow-2xl locator-font tracking-[0.2em]">
-                {{ project.title }}
-              </h1>
+          <div class="relative z-20 text-center px-6 max-w-3xl transition-all duration-700 
+                      opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0">
+            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter locator-font mb-6">
+              {{ project.title }}
+            </h1>
+            <p class="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {{ project.longDescription || project.description }}
+            </p>
 
-              <!-- Описание -->
-              <p class="text-lg md:text-xl text-foreground/90 drop-shadow-md leading-relaxed max-w-2xl mx-auto">
-                {{ project.longDescription || project.description }}
-              </p>
-
-              <!-- Кнопки действий -->
-              <div class="flex flex-wrap gap-4 pt-4 justify-center">
-                <Button v-if="project.githubLink" variant="default" size="lg" class="gap-2 shadow-lg shadow-primary/25 border border-white/10" as-child>
-                  <a :href="project.githubLink" target="_blank" rel="noopener noreferrer">
-                    <Github class="w-5 h-5" />
-                    GitHub
-                  </a>
-                </Button>
-              </div>
-
-            </div>
+            <Button v-if="project.githubLink" size="lg" class="mt-10 gap-3" as-child>
+              <a :href="project.githubLink" target="_blank" rel="noopener noreferrer">
+                <Github class="w-5 h-5" /> GitHub
+              </a>
+            </Button>
           </div>
-
         </div>
 
-        <Separator class="bg-white/10" />
+        <Separator class="bg-border" />
 
-        <!-- Стек технологий -->
-        <div class="space-y-4">
-          <h3 class="text-xl font-semibold flex items-center gap-2 text-foreground">
-            <Code2 class="w-5 h-5 text-primary" /> Технологический стек
+        <!-- Технологический стек -->
+        <div class="space-y-8">
+          <h3 class="text-3xl font-semibold tracking-tight text-center">
+            Технологический стек
           </h3>
-          <div class="flex flex-wrap gap-3">
-            <Badge v-for="tech in project.techStack" :key="tech" variant="secondary" class="text-base px-4 py-1.5 bg-background/50 border-white/10">
-              {{ tech }}
-            </Badge>
-          </div>
+
+          <Accordion type="multiple" class="space-y-4">
+            <AccordionItem 
+              v-for="(section, idx) in project.techStackSections" 
+              :key="idx"
+              :value="`item-${idx}`"
+              class="group border border-border bg-card rounded-3xl overflow-hidden 
+                     hover:border-primary hover:shadow-xl hover:-translate-y-1 
+                     transition-all duration-300"
+            >
+              <AccordionTrigger class="px-8 py-7 hover:no-underline">
+                <div class="flex items-center gap-5 w-full">
+                  <div class="p-4 rounded-2xl bg-primary/10 text-primary transition-all duration-300 
+                              group-hover:rotate-12 group-hover:scale-110 
+                              group-data-[state=open]:rotate-6 group-data-[state=open]:scale-110">
+                    <component :is="section.icon" class="w-7 h-7" />
+                  </div>
+                  
+                  <div class="flex-1 text-left">
+                    <h4 class="text-2xl font-semibold tracking-tight group-hover:text-primary transition-colors">
+                      {{ section.title }}
+                    </h4>
+                    <p class="text-muted-foreground mt-1.5 text-[15px] line-clamp-2">
+                      {{ section.description }}
+                    </p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+
+              <AccordionContent class="px-8 pb-8">
+                <div class="pt-6 border-t border-border">
+                  <div class="flex flex-wrap gap-2.5 mb-6">
+                    <Badge 
+                      v-for="tech in section.techs.split(',')" 
+                      :key="tech.trim()"
+                      variant="secondary"
+                      class="px-4 py-2 text-sm font-medium bg-secondary hover:bg-secondary/80"
+                    >
+                      {{ tech.trim() }}
+                    </Badge>
+                  </div>
+                  <p class="text-foreground/80 leading-relaxed">
+                    {{ section.description }}
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
-        <Separator class="bg-white/10" />
+        <Separator class="bg-border" />
 
-        <!-- Задачи и Сложности (Grid) -->
-        <div class="grid md:grid-cols-2 gap-8">
-          <div class="space-y-4">
-            <h3 class="text-xl font-semibold flex items-center gap-2 text-green-400">
-              <CheckCircle2 class="w-5 h-5" /> Выполненные задачи
-            </h3>
-            <ul class="space-y-4 text-muted-foreground">
-              <li v-for="task in project.tasks" :key="task" class="flex gap-3 leading-relaxed">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0"></span>
-                {{ task }}
-              </li>
-            </ul>
+        <!-- БЛОК: Результаты и решения -->
+        <div class="space-y-10">
+          <div class="text-center space-y-4">
+            <h3 class="text-3xl font-semibold tracking-tight">Результаты и ключевые решения</h3>
+            <p class="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Структурированный подход к реализации системы: от автоматизации процессов до комплексной поддержки модулей.
+            </p>
           </div>
 
-          <div class="space-y-4">
-            <h3 class="text-xl font-semibold flex items-center gap-2 text-amber-400">
-              <AlertTriangle class="w-5 h-5" /> Сложности и решения
-            </h3>
-            <div class="space-y-4">
-              <div 
-                v-for="(challenge, idx) in project.challenges" 
-                :key="idx" 
-                class="border border-white/5 bg-white/[0.02] rounded-lg p-3"
-              >
-                <div class="text-red-400/90 font-medium mb-1 text-sm">
-                  <AlertTriangle class="w-3.5 h-3.5 mr-1 inline" />
-                  {{ parseChallenge(challenge).problem }}
-                </div>
-                <div class="text-green-400/90 text-sm pl-5.5">
-                  <CheckCircle2 class="w-3.5 h-3.5 mr-1 inline" />
-                  <span class="text-muted-foreground">{{ parseChallenge(challenge).solution }}</span>
+          <div class="grid md:grid-cols-2 gap-12">
+            
+            <!--  Выполненные задачи (Timeline с эффектом фокусировки) -->
+            <div class="space-y-6">
+              <h4 class="text-xl font-semibold flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 class="w-5 h-5" /> Выполненные задачи
+              </h4>
+              
+              <div class="relative">
+                <!-- Вертикальная линия -->
+                <div class="absolute left-[11px] top-3 bottom-3 w-px bg-emerald-200/50 dark:bg-emerald-800/40"></div>
+                
+                <div 
+                  v-for="(task, idx) in keyTasks" 
+                  :key="idx" 
+                  class="relative pl-8 pb-8 last:pb-0 group"
+                  @mouseenter="hoveredTaskIndex = idx"
+                  @mouseleave="hoveredTaskIndex = null"
+                >
+                  
+                  <!-- Точка таймлайна -->
+                  <div class="absolute left-[5px] top-[12px] w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-background 
+                              group-hover:scale-125 group-hover:bg-emerald-600 transition-all duration-300"></div>
+                  
+                  <div 
+                    class="space-y-2 transition-all duration-300"
+                    :class="[
+                      hoveredTaskIndex !== null && hoveredTaskIndex !== idx 
+                        ? 'opacity-30' 
+                        : 'opacity-100'
+                    ]"
+                  >
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <component :is="task.icon" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                      <h5 class="font-semibold text-foreground text-[15px]">{{ task.title }}</h5>
+                      <Badge variant="secondary" class="text-[10px] h-5 px-2 font-medium">{{ task.category }}</Badge>
+                    </div>
+                    <p class="text-sm text-muted-foreground leading-relaxed pl-6">
+                      {{ task.description }}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- 🔵 Архитектурные решения (ИСПРАВЛЕНО: идентичная структура + эффект затухания) -->
+            <div class="space-y-6">
+              <h4 class="text-xl font-semibold flex items-center gap-3 text-blue-600 dark:text-blue-400">
+                <Zap class="w-5 h-5" /> Архитектурные решения
+              </h4>
+              
+              <div class="relative">
+                <!-- Вертикальная линия -->
+                <div class="absolute left-[11px] top-3 bottom-3 w-px bg-blue-200/50 dark:bg-blue-800/40"></div>
+                
+                <div 
+                  v-for="(sol, idx) in keySolutions" 
+                  :key="idx" 
+                  class="relative pl-8 pb-8 last:pb-0 group"
+                  @mouseenter="hoveredSolutionIndex = idx"
+                  @mouseleave="hoveredSolutionIndex = null"
+                >
+                  
+                  <!-- Точка-ромб -->
+                  <div class="absolute left-[5px] top-[12px] w-3 h-3 bg-blue-500 rotate-45 
+                              ring-4 ring-background group-hover:scale-150 group-hover:bg-blue-400 
+                              transition-all duration-300"></div>
+                  
+                  <!-- ✅ Идентичная структура с левым блоком + эффект затухания -->
+                  <div 
+                    class="space-y-2 transition-all duration-300"
+                    :class="[
+                      hoveredSolutionIndex !== null && hoveredSolutionIndex !== idx 
+                        ? 'opacity-30' 
+                        : 'opacity-100'
+                    ]"
+                  >
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <component :is="sol.icon" class="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <h5 class="font-semibold text-foreground text-[15px]">{{ sol.title }}</h5>
+                      <Badge variant="outline" class="text-[10px] h-5 px-2 font-medium">{{ sol.type }}</Badge>
+                    </div>
+                    <p class="text-sm text-muted-foreground leading-relaxed pl-6">
+                      {{ sol.description }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <Separator class="bg-white/10" />
-
-        <!-- Галерея скриншотов -->
-        <div v-if="project.screenshots && project.screenshots.length" class="space-y-4">
-          <h3 class="text-xl font-semibold">Скриншоты</h3>
+        <!-- Галерея -->
+        <div v-if="project.screenshots?.length" class="space-y-8">
+          <h3 class="text-2xl font-semibold">Скриншоты</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div 
               v-for="(scr, idx) in project.screenshots" 
               :key="idx"
-              class="rounded-xl overflow-hidden border border-white/10 bg-white/5 aspect-video flex items-center justify-center text-muted-foreground relative group"
+              class="aspect-video rounded-3xl border border-border bg-card flex items-center justify-center"
             >
-               <!-- <img :src="scr" class="object-cover w-full h-full" /> -->
-               <div class="text-sm opacity-50">
-                 Изображение: {{ scr }} ({{ idx + 1 }})
-               </div>
+              <span class="text-muted-foreground text-sm">Скриншот {{ idx + 1 }} — {{ scr }}</span>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -191,14 +323,5 @@ const parseChallenge = (text: string) => {
 <style scoped>
 .locator-font {
   font-family: 'Locator', sans-serif;
-}
-
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in-up {
-  opacity: 0;
-  animation: fade-in-up 0.8s ease-out forwards;
 }
 </style>
